@@ -1,0 +1,21 @@
+#compiler-begin
+<modifier name="nebula_core" version="1.0" />
+
+<!-- Çekirdek Nebula Dil Tanımlamaları ve Operatör Öncelikleri -->
+<define-token name="KEYWORD_LET" regex="let" />
+<define-token name="KEYWORD_ASYNC" regex="async" />
+<define-token name="KEYWORD_AWAIT" regex="await" />
+<define-token name="KEYWORD_IGNORE" regex="ignore" />
+<define-token name="KEYWORD_FUNC" regex="func" />
+<define-token name="KEYWORD_CLASS" regex="class" />
+
+<rule name="variable_declaration" pattern="KEYWORD_LET IDENTIFIER COLON TYPE EQUAL EXPR SEMICOLON" />
+<rule name="function_declaration" pattern="KEYWORD_FUNC IDENTIFIER LPAREN RPAREN LBRACE BODY RBRACE" />
+<rule name="async_function_declaration" pattern="KEYWORD_ASYNC KEYWORD_FUNC IDENTIFIER LPAREN RPAREN LBRACE BODY RBRACE" />
+
+<precedence operator="*" level="10" />
+<precedence operator="/" level="10" />
+<precedence operator="+" level="5" />
+<precedence operator="-" level="5" />
+
+#compiler-end

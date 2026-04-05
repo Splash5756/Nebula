@@ -1,0 +1,10 @@
+#compiler-begin
+<modifier name="python_api" version="1.0" />
+<use target-lang="python" />
+
+<!-- Python C-API Özel Tokenları ve Kuralları -->
+<define-token name="PYTHON_EXEC" regex="py_exec" />
+<define-token name="PYTHON_EVAL" regex="py_eval" />
+
+<rule name="python_inline_exec" pattern="PYTHON_EXEC STRING SEMICOLON" />
+#compiler-end

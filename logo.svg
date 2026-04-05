@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+    <defs>
+        <radialGradient id="nebulaCore" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4B0082" />
+            <stop offset="30%" stop-color="#8A2BE2" />
+            <stop offset="70%" stop-color="#4B0082" opacity="0.3" />
+            <stop offset="100%" stop-color="#0F0C29" opacity="0" />
+        </radialGradient>
+        <linearGradient id="treeLine" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00FFFF" />
+            <stop offset="100%" stop-color="#FF00FF" />
+        </linearGradient>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <!-- Uzay/Uzay Boşluğu Arka Planı -->
+    <rect width="400" height="400" fill="#0F0C29" />
+    
+    <!-- Merkezdeki Bulutsu (Nebula) Enerjisi -->
+    <circle cx="200" cy="200" r="180" fill="url(#nebulaCore)" />
+    
+    <!-- LIFO ve AST Node Ağacını Temsil Eden Grafik -->
+    <g filter="url(#glow)">
+        <!-- Kök (Parser) -->
+        <circle cx="200" cy="110" r="16" fill="#00FFFF" />
+        
+        <!-- Dallanmalar (Lines) -->
+        <line x1="200" y1="126" x2="120" y2="190" stroke="url(#treeLine)" stroke-width="4" />
+        <line x1="200" y1="126" x2="280" y2="190" stroke="url(#treeLine)" stroke-width="4" />
+        
+        <!-- LIFO Stack Kapsamları (Sol ve Sağ Kollar) -->
+        <circle cx="120" cy="190" r="12" fill="#FF00FF" />
+        <circle cx="280" cy="190" r="12" fill="#FF00FF" />
+        
+        <!-- Alt AST Yapıları -->
+        <line x1="120" y1="202" x2="70" y2="260" stroke="url(#treeLine)" stroke-width="3" />
+        <line x1="120" y1="202" x2="150" y2="280" stroke="url(#treeLine)" stroke-width="3" />
+        <line x1="280" y1="202" x2="320" y2="270" stroke="url(#treeLine)" stroke-width="3" />
+        
+        <circle cx="70" cy="260" r="8" fill="#00FFFF" />
+        <circle cx="150" cy="280" r="10" fill="#00FFFF" />
+        <circle cx="320" cy="270" r="10" fill="#FF00FF" />
+    </g>
+
+    <!-- Marka Yazısı -->
+    <text x="200" y="350" font-family="'Segoe UI', Arial, sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="6">NEBULA</text>
+    <text x="200" y="375" font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#00FFFF" text-anchor="middle" letter-spacing="3">C-TRANSPILER ENGINE v0.1</text>
+</svg>
