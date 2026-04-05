@@ -1,0 +1,8 @@
+include "core_packages/core.neb"
+include "core_packages/std_io.neb"
+
+class Program {
+    async func Main() {
+        Console.WriteLine("Merhaba Dunya! Nebula v0.2 Motoru Gururla Sunar...");
+    }
+}

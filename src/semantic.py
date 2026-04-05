@@ -8,19 +8,19 @@ class SemanticAnalyzer:
         self.global_vars = set()
 
     def analyze(self, ast_root: ast.ProgramNode):
-        # 1. Global değişkenleri topla
+        # Nebula OOP felsefesi: Program seviyesinde sadece Class, Include ve CompilerBlock bulunabilir.
         for node in ast_root.body:
-            if isinstance(node, ast.VarDeclNode):
-                self.global_vars.add(node.name)
+            if isinstance(node, ast.IncludeBeginNode) or isinstance(node, ast.IncludeEndNode) or isinstance(node, ast.CompilerBlockNode):
+                continue
+            if not isinstance(node, ast.ClassDeclNode):
+                raise SemanticError(f"Fatal Error: Nebula saf nesne yönelimli bir dildir. Tüm tanımlamalar bir 'class' içerisinde yapılmalıdır! C# standartları ihlali. Hatalı Node: {node.__class__.__name__} at line {node.line}")
 
-        # 2. Fonksiyonları analiz et
+        # 2. Fonksiyonları analiz et (Sadece class içindekiler)
         for node in ast_root.body:
             if isinstance(node, ast.ClassDeclNode):
                 for member in node.body:
                     if isinstance(member, ast.FuncDeclNode):
                         self._analyze_function(member)
-            elif isinstance(node, ast.FuncDeclNode):
-                self._analyze_function(node)
 
     def _analyze_function(self, func_node: ast.FuncDeclNode):
         if not func_node.is_async:

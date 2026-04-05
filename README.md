@@ -1,36 +1,30 @@
 <div align="center">
   <img src="logo.svg" width="250" alt="Nebula Logo" />
-  <h1>Nebula (nep:pl) Çekirdek Motoru v0.1</h1>
-  <p><i>Kusursuz C-Transpiler, Zero-Overhead ve Green Thread Entegrasyonu</i></p>
+  <h1>Nebula (nep:pl) Meta-Compiler v0.2 Mimarisi</h1>
+  <p><i>Dumb Engine, Regex-Based Lexer, Evrensel Ayrıştırıcı ve Satır İçi (Inline) Mantık Enjeksiyonu</i></p>
 </div>
 
 ---
 
-## 🚀 Nebula Motoru Nedir?
-**Nebula**, yazılım mimarisinde üst düzey (C# benzeri) bir geliştirici deneyimi sunarken arka planda kendisini saf, katı ve yüksek performanslı **C koduna** dönüştüren (Transpile eden) yepyeni bir programlama dilidir. 
+## 🚀 Nebula Meta-Compiler Nedir?
+**Nebula v0.2**, artık statik bir Transpiler olmaktan çıkıp tamamen evrensel ve "Kör" (Dumb Engine) bir mimariye bürünmüştür. Python çekirdeğimiz (motor) hiçbir AST sınıfı, ayrıştırma mantığı veya semantik yasayı kendi içinde hardcode barındırmaz.
 
-**Zero-Overhead Felsefesi:** Oluşturduğunuz nesneler (class) C tarafında asla Sanal Fonksiyon Tablosu (V-Table) veya ağır OS threadleri yaratmaz. Her şey sisteme mükemmel derecede entegre olan saf `typedef struct` ve C işaretçisi (Pointer) metodolojisine dönüştürülür. İşletim sistemi kaynaklarını mükemmel korur.
+**Zero-Overhead ve Sıfır Sınır Felsefesi:** Dillerin zekası (Asenkron State-Machine çevirileri, OOP mimarisi, sınıflar) tamamen dışarıdan yüklenen `.neb` genişletme paketlerindeki (*örn:* `core.neb`, `std_io.neb`)  `<transform>` etiketleri üzerinden beslenir. Standart kütüphaneler de dahil olmak üzere her yeni davranış C# / OOP felsefesine sıkı sıkıya bağlı kalınarak ve motorun içi açılmadan sisteme kazandırılır.
 
 ## 🧠 Mimarimizin Devrimsel Özellikleri
 
-### LIFO Stack Tabanlı Parser & Kapsam İzolasyonu
-Nebula standart bir yukarıdan aşağı okuyucu (parser) kullanmaz. Projeye dahil olan (#include) her dosya kendi **LIFO (Stack) Modülü** içerisine alınır. Böylece bir dosyadaki modifier değişiklikleri (`<modifier>` tagleri üzerinden kurulan kurallar), işlemi bittikten hemen sonra bellekten silinir (`#include-end` bayrağı ile Pop). Yabancı paketler ana projenizi asla zehirlemez (Global Pollution Protection).
+### Evrensel Ayrıştırıcı (Agnostic Parser & Node)
+Projeye dahil olan dosyalar (`include "..."` ile okunan) önce kapsamlı bir MetaScanner üzerinden geçer ve Grammar kurallarını, yeni Lexer tokenlarını tarar. Parser, tamamen `GenericNode` objesi üreten dinamik bir BNF eşleştiricisine dönüştürülmüştür. 
 
-### Self-Bootstrapping Sistemi
-Nebula sadece bir okuyucu değil, kurallarını dışarıdaki kendi dosyalarından (Örn: `core.neb`) çeken dinamik bir mekanizmadır. Yeni operatörler ve kurallar anında sisteme katılabilir.
-
-## ⚡ State-Machine Asenkron Yapı (Green Threads)
-En güçlü yanımız Asenkron yönetimdir! `is_async=True` bayrağına sahip bir asenkron fonksiyon, klasik işletim sistemi işlemciklerine (OS Threads) değil; motorun kendi içinde yönettiği bir **State Machine (Durum Makinesi)** yordamına dönüştürülür. 
-
-* Bir metot içerisinde `await` sinyali verildiğinde, lokal bağlam (local variables) ölmez. Bunlar derleyici tarafından otomatik oluşturulan bir `Context_Struct` belleğine kopyalanır.
-* Yapı hemen Nebula Event Loop (Zamanlayıcı) rutinine `yield` edilerek kilitlenmeden asılı kalır. Performans kaybı ve Context Switch maliyeti **Sıfırdır**.
+### Template Engine ve Inline Logic Büyüsü (exec() Enjeksiyonu)
+Yepyeni `template_engine.py` mimarimiz, yakaladığı o evrensel AST düğümleri için eğer `.neb` dosyası içinde bir XML `<transform node="...">` etiketi görürse, oradaki Python kodunu çeker. Güvenli izolasyonla o kodu anında RAM'de `exec()` ile sarmalayıp, düğüm analizi için yürütür ve geriye kusursuz bir C Kodu tükürür.
 
 ## 🔌 Nasıl Çalıştırılır?
 
-Projeyi denemek ve dinamik Bootstrapped `main.py` giriş noktasını çalıştırmak için aşağıdaki komutu terminalinizde çalıştırın:
+Tek bir komutla derleyici kodunuzu okur, `core_packages` çözümlerini tamamlar, C kodunu üretip sıfırdan oluşturduğu `build/` klasörüne kaydeder. Ardından varsa arka planda GCC ile derleyip sonucu saniyesinde ekrana basar:
 
 ```bash
-python main.py tests/test_user_code.nep
+python nebula.py tests/hello_world.nep
 ```
 
-Konsolunuzda LIFO Parser'ın adım adım inşasını, modifier izolasyonu kurallarını ve en sonda `.nep` dosyamızın kusursuz bir `.c` ve `.h` dökümüne nasıl devrildiğini anında görebilirsiniz!
+Konsolunuzda o tarihi "Merhaba Dünya!" mesajını ve arka planda inşa edilen o eşsiz nesne yönelimli, sıfır-maliyetli C kalıbını izleyebilirsiniz!

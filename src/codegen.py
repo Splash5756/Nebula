@@ -134,9 +134,17 @@ class CodeGen:
         
         for body_node in node.body:
             if isinstance(body_node, ast.VarDeclNode):
-                if body_node.init_value and isinstance(body_node.init_value, ast.NumberLiteralNode):
-                    self.c_blocks.append(f"            ctx->{body_node.name} = {body_node.init_value.value};")
+                if body_node.init_value:
+                    if isinstance(body_node.init_value, ast.NumberLiteralNode):
+                        self.c_blocks.append(f"            ctx->{body_node.name} = {body_node.init_value.value};")
+                    elif isinstance(body_node.init_value, ast.NewCallNode):
+                        self.c_blocks.append(f"            ctx->{body_node.name} = malloc(sizeof({body_node.init_value.class_name}));")
+                        self.c_blocks.append(f"            {body_node.init_value.class_name}_init(ctx->{body_node.name});")
             
+            elif isinstance(body_node, ast.PropertyAccessNode):
+                if isinstance(body_node.object_expr, ast.ThisExprNode):
+                     self.c_blocks.append(f"            ctx->this->{body_node.property_name} = 0; // Ornek islem")
+
             elif isinstance(body_node, ast.AwaitCallNode):
                 # Await noktası: Nebula runtime'a yield et.
                 next_state = current_state + 1
@@ -145,6 +153,8 @@ class CodeGen:
                 # Farazi async_submit çağrısı
                 if isinstance(body_node.func_call, ast.FuncCallNode):
                     self.c_blocks.append(f"            nebula_submit_await({body_node.func_call.name});")
+                elif isinstance(body_node.func_call, ast.PropertyAccessNode):
+                    self.c_blocks.append(f"            nebula_submit_await(ctx->{body_node.func_call.object_expr.name}->{body_node.func_call.property_name});")
                 self.c_blocks.append(f"            return 1; // Pending flag don")
                 self.c_blocks.append(f"        case {next_state}:")
                 current_state = next_state

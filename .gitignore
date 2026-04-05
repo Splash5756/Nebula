@@ -13,3 +13,4 @@ venv/
 *.so
 *.dylib
 test_user_code.nep
+build/

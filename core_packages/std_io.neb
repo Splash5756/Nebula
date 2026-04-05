@@ -1,0 +1,39 @@
+#compiler-begin
+<modifier name="std_io" />
+
+<!-- Console Sınıfı Dönüşüm (Transformation) Mantığı -->
+<!--
+  C# Tarzı çağrı: Console.WriteLine("Merhaba Dunya!")
+  AST'de method_call_string düğümüyle (GenericNode) yakalanır ve anında enjecte edilir.
+-->
+<transform node="method_call_string">
+<logic>
+idents = node.get("IDENTIFIER")
+if isinstance(idents, list) and len(idents) >= 2:
+    class_name = idents[0]
+    func_name = idents[1]
+else:
+    class_name = "Unknown"
+    func_name = "Unknown"
+
+# Tırnaklarla beraber gelen STRING argümanını çekiyoruz
+arg_val = node.get("STRING")
+if isinstance(arg_val, list):
+    arg_val = arg_val[0]
+
+if class_name == "Console" and func_name == "WriteLine":
+    # Hedef C kodu: printf("Merhaba Dunya!\n");
+    out = f"            printf({arg_val});\n"
+    out += f"            printf(\"\\n\");\n"
+    return out
+
+return "            /* Undefined static method call */\n"
+</logic>
+</transform>
+
+#compiler-end
+
+class Console { 
+    func WriteLine() {
+    }
+}

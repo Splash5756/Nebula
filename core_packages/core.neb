@@ -1,21 +1,87 @@
 #compiler-begin
-<modifier name="nebula_core" version="1.0" />
+<modifier name="nebula_core_v2" version="2.0" />
 
-<!-- Çekirdek Nebula Dil Tanımlamaları ve Operatör Öncelikleri -->
-<define-token name="KEYWORD_LET" regex="let" />
+<!-- 1. Tokens (Kör Lexer İçin Regex Kuralları) -->
 <define-token name="KEYWORD_ASYNC" regex="async" />
-<define-token name="KEYWORD_AWAIT" regex="await" />
-<define-token name="KEYWORD_IGNORE" regex="ignore" />
 <define-token name="KEYWORD_FUNC" regex="func" />
 <define-token name="KEYWORD_CLASS" regex="class" />
+<define-token name="KEYWORD_LET" regex="let" />
+<define-token name="KEYWORD_AWAIT" regex="await" />
+<define-token name="KEYWORD_NEW" regex="new" />
+<define-token name="KEYWORD_THIS" regex="this" />
+<define-token name="LBRACE" regex="\{" />
+<define-token name="RBRACE" regex="\}" />
+<define-token name="LPAREN" regex="\(" />
+<define-token name="RPAREN" regex="\)" />
+<define-token name="COLON" regex=":" />
+<define-token name="SEMICOLON" regex=";" />
+<define-token name="EQUAL" regex="=" />
+<define-token name="DOT" regex="\." />
+<define-token name="IDENTIFIER" regex="[a-zA-Z_][a-zA-Z0-9_]*" />
+<define-token name="NUMBER" regex="[0-9]+" />
+<define-token name="STRING" regex='"[^"]*"' />
 
-<rule name="variable_declaration" pattern="KEYWORD_LET IDENTIFIER COLON TYPE EQUAL EXPR SEMICOLON" />
+<!-- 2. Evrensel Ayrıştırıcı için BNF Kuralları -->
+<rule name="variable_declaration" pattern="KEYWORD_LET IDENTIFIER COLON IDENTIFIER EQUAL EXPR SEMICOLON" />
+<rule name="object_instantiation" pattern="KEYWORD_LET IDENTIFIER COLON IDENTIFIER EQUAL KEYWORD_NEW IDENTIFIER LPAREN RPAREN SEMICOLON" />
+<rule name="await_call" pattern="KEYWORD_AWAIT IDENTIFIER LPAREN RPAREN SEMICOLON" />
+<rule name="assign_property" pattern="KEYWORD_THIS DOT IDENTIFIER EQUAL EXPR SEMICOLON" />
+<rule name="method_call_string" pattern="IDENTIFIER DOT IDENTIFIER LPAREN STRING RPAREN SEMICOLON" />
 <rule name="function_declaration" pattern="KEYWORD_FUNC IDENTIFIER LPAREN RPAREN LBRACE BODY RBRACE" />
 <rule name="async_function_declaration" pattern="KEYWORD_ASYNC KEYWORD_FUNC IDENTIFIER LPAREN RPAREN LBRACE BODY RBRACE" />
+<rule name="ClassDeclaration" pattern="KEYWORD_CLASS IDENTIFIER LBRACE BODY RBRACE" />
 
-<precedence operator="*" level="10" />
-<precedence operator="/" level="10" />
-<precedence operator="+" level="5" />
-<precedence operator="-" level="5" />
+<!-- 3. MANTIK ENJEKSİYONLARI (Python kodlarıyla XML içinde C Üretimi) -->
 
+<transform node="ClassDeclaration">
+<logic>
+idents = node.get("IDENTIFIER")
+class_name = idents[0] if isinstance(idents, list) else idents
+body_nodes = node.get("BODY") or []
+engine = ctx_data["engine"]
+
+c_methods = ""
+for b in body_nodes:
+    c_methods += engine._transform_node(b, ctx_data) + "\n"
+
+out = f"// --- Nebula Class Çevirisi: {class_name} ---\n"
+out += f"typedef struct {{\n    // Sınıf özellikleri buraya oturacak\n}} {class_name};\n\n"
+out += f"void {class_name}_init({class_name}* this) {{ \n    // Contructor\n}}\n\n"
+out += c_methods
+return out
+</logic>
+</transform>
+
+<transform node="async_function_declaration">
+<logic>
+idents = node.get("IDENTIFIER")
+func_name = idents[0] if isinstance(idents, list) else idents
+body_nodes = node.get("BODY") or []
+engine = ctx_data["engine"]
+
+out = f"// Asenkron Fonksiyon State-Machine: {func_name}\n"
+out += f"typedef struct {{\n    int state;\n}} {func_name}_Context;\n\n"
+out += f"int {func_name}({func_name}_Context* ctx) {{\n    switch(ctx->state) {{\n        case 0:\n"
+
+state_counter = 0
+for b in body_nodes:
+    if b.type == "await_call":
+        func_to_call = b.get("IDENTIFIER")
+        state_counter += 1
+        out += f"            nebula_submit_await({func_to_call});\n"
+        out += f"            ctx->state = {state_counter};\n"
+        out += f"            return 1; // Pending status\n"
+        out += f"        case {state_counter}:\n"
+    elif b.type == "variable_declaration":
+        idents = b.get("IDENTIFIER")
+        var_name = idents[0] if isinstance(idents, list) else idents
+        val = b.get("EXPR")
+        out += f"            int {var_name} = {val};\n"
+    else:
+        out += engine._transform_node(b, ctx_data)
+        
+out += "    }\n    return 0; // Fonksiyon Tamamlandı\n}\n"
+return out
+</logic>
+</transform>
 #compiler-end
